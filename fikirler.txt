@@ -1,0 +1,24 @@
+çizgiyi çektik arabanın içerisinden bir tespit olunca  bunu bi listeye atacaz 
+eğer aşağıdan biri tespit edilirse bunu bir yere atamıyoruz
+
+eğer içeriden gelenin ıd sine bağlı olan çizgiyi aşağı yönlü geçerse bir çıkış saptanmış olacak
+
+eğer aşağıdan gelen o çizginin üstüne geçerse merkezi bu da bir  biniş olacak
+
+kapı kapandığında liste temizlenecek ki eski ıd ler başımıza iş açmasın
+
+ama şimdi önemli olan her zaman benzersiz bir ıd mi alıyor baktım şimdi o ıd bi daha kullanılmıyormuş tamam o zaman aşağıdan gelenin listeye elenmesinde sorun yok onu zaten kapı kapanınca silecez
+
+
+
+
+şimdi içeride dışaroıda diye id leri eklesek
+içerdekilerden merkezi çizgiden büyü olduğunda demek ki indi
+
+dışarıdakilerden de merkezleri çizgiden küçük olursa demek ki bindi
+
+bunu bi deniyelim
+
+
+
+

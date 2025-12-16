@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Otobüs Seç</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('arka_plan.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.95);
+            width: 90%;
+            max-width: 420px;
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        h2 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .bus-list-container {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .bus-item {
+            padding: 15px 18px;
+            background: #ffffff;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .bus-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            background: #e6f0ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay">
+        <h2>Otobüs Seç</h2>
+        <p>Listeden bir otobüs seçerek doluluk oranını görebilirsiniz.</p>
+
+        <div class="bus-list-container" id="busList">
+            Yükleniyor...
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Firebase konfigürasyonunu kendi bilgilerinizle doldurun
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_nFCV-PmDfhwkdr-2YUxGl4n_W4CFivo",
+            authDomain: "yolcu-rtdb.firebaseapp.com",
+            databaseURL: "https://yolcu-rtdb-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "yolcu-rtdb",
+            storageBucket: "yolcu-rtdb.firebasestorage.app",
+            messagingSenderId: "1036513083072",
+            appId: "1:1036513083072:web:811cbec24afe2539a9f725",
+            measurementId: "G-BWSZNYWNDP"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref("otobusler").on("value", snap => {
+            const busListDiv = document.getElementById("busList");
+            busListDiv.innerHTML = ""; // temizle
+
+            let data = snap.val();
+            if (!data) {
+                busListDiv.innerHTML = "Otobüs bulunamadı.";
+                return;
+            }
+
+            Object.keys(data).forEach(otobusAdi => {
+                let el = document.createElement("div");
+                el.className = "bus-item";
+                el.innerText = otobusAdi;
+
+                el.onclick = () => {
+                    window.location.href = "otobus_bilgi.html?bus=" + encodeURIComponent(otobusAdi);
+                };
+
+                busListDiv.appendChild(el);
+            });
+        });
+    </script>
+
+</body>
+</html>

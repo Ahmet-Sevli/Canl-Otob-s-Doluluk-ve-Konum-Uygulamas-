@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Otobüs Doluluk ve Harita</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background: url('image.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* Sol ve sağ eşit genişlik */
+        #map, .card {
+            width: 50%;
+            height: 100%;
+        }
+
+        /* Doluluk kartı */
+        .card {
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            padding: 25px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .bus-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .bar {
+            width: 100%;
+            height: 30px;
+            background: #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #4CAF50;
+            transition: width 0.6s, background 0.6s;
+            border-radius: 15px 0 0 15px;
+        }
+
+        #percent {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #status {
+            font-size: 16px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sol: Harita -->
+    <div id="map"></div>
+
+    <!-- Sağ: Doluluk kartı -->
+    <div class="card">
+        <h2>Otobüs Doluluk Durumu</h2>
+        <div class="bus-name" id="busTitle">Yükleniyor...</div>
+        <div class="bar">
+            <div id="barFill" class="bar-fill"></div>
+        </div>
+        <p id="percent">0%</p>
+        <p id="status">Durum yükleniyor...</p>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Firebase konfigürasyonu
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_nFCV-PmDfhwkdr-2YUxGl4n_W4CFivo",
+            authDomain: "yolcu-rtdb.firebaseapp.com",
+            databaseURL: "https://yolcu-rtdb-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "yolcu-rtdb",
+            storageBucket: "yolcu-rtdb.firebasestorage.app",
+            messagingSenderId: "1036513083072",
+            appId: "1:1036513083072:web:811cbec24afe2539a9f725",
+            measurementId: "G-BWSZNYWNDP"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // URL'den otobüs adı al
+        const urlParams = new URLSearchParams(window.location.search);
+        const busName = decodeURIComponent(urlParams.get("bus") || "Arifiye-Kampus");
+        document.getElementById("busTitle").innerText = busName;
+
+        // Firebase'den veri çek
+        db.ref("otobusler/" + busName).on("value", snap => {
+            let data = snap.val();
+
+            if (!data) {
+                console.log("Veri yok");
+                document.getElementById("status").innerText = "Veri bulunamadı!";
+                return;
+            }
+
+            let kisi = Number(data.toplam_yolcu) || 0;
+            let kapasite = Number(data.kapasite) || 1;
+
+            let yuzde = Math.round((kisi / kapasite) * 100);
+
+            document.getElementById("percent").innerText = yuzde + "%";
+            document.getElementById("barFill").style.width = yuzde + "%";
+
+            // Bar rengi ve durum
+            if (yuzde <= 60) {
+                document.getElementById("barFill").style.background = "#4CAF50";
+                document.getElementById("status").innerText = "Oturarak Yolculuk";
+                document.getElementById("status").style.color = "green";
+            } else if (yuzde <= 80) {
+                document.getElementById("barFill").style.background = "orange";
+                document.getElementById("status").innerText = "Ayakta Yolculuk (Orta Seviye)";
+                document.getElementById("status").style.color = "orange";
+            } else {
+                document.getElementById("barFill").style.background = "red";
+                document.getElementById("status").innerText = "Aşırı Yoğun!";
+                document.getElementById("status").style.color = "red";
+            }
+        });
+
+        // Leaflet harita - gösterim amaçlı Sakarya Üniversitesi
+        const map = L.map('map').setView([40.777, 30.336], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Marker - otobüs (gösterim)
+        L.marker([40.777, 30.336]).addTo(map)
+            .bindPopup(busName + ' (Sakarya Üniversitesi)').openPopup();
+    </script>
+
+</body>
+</html>
